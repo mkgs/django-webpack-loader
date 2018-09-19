@@ -78,9 +78,13 @@ class WebpackLoader(object):
                 )
 
         if assets.get('status') == 'done':
-            chunks = assets['chunks'].get(bundle_name, None)
-            if chunks is None:
-                raise WebpackBundleLookupError('Cannot resolve bundle {0}.'.format(bundle_name))
+            if self.config['SPLIT_CHUNKS']:
+                chunks = [chunk for chunk_name, chunk in assets['chunks'].items()
+                          if bundle_name in chunk_name.split('~')]
+            else:
+                chunks = assets['chunks'].get(bundle_name, None)
+                if chunks is None:
+                    raise WebpackBundleLookupError('Cannot resolve bundle {0}.'.format(bundle_name))
             return self.filter_chunks(chunks)
 
         elif assets.get('status') == 'error':
